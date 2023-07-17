@@ -1,13 +1,15 @@
 import sharp from 'sharp';
+import { join } from 'path';
+import { writeFileSync } from 'fs';
 import { name, version } from '../package.json';
+
 import config from '../config';
 import { createOutputFolder } from './utils/create-output-folder';
 import { getInputImages } from './utils/get-input-images';
-import { splitPage } from './processors/split-page';
 import { outputBuffers } from './output-buffers';
+import { splitPage } from './processors/split-page';
 import { cropPage } from './processors/crop-page';
-import { writeFileSync } from 'fs';
-import { join } from 'path';
+import { trimPage } from './processors/trim-page';
 
 async function run() {
   console.log(`Running ${name} v${version}...`);
@@ -45,6 +47,11 @@ async function run() {
 
       if (process.action === 'CROP') {
         buffers = await cropPage(buffers, process);
+        continue;
+      }
+
+      if (process.action === 'TRIM') {
+        buffers = await trimPage(buffers, process);
         continue;
       }
 
