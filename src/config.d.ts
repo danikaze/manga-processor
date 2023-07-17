@@ -9,17 +9,22 @@ export interface Config {
   outputFolder: string;
   /** If defined, output will be written in this file, relative to outputFolder */
   log?: string;
-  /** List of ProcessActions for each image */
+  /** List of ProcessActions for EACH image (`skip` or `only` can be used) */
   actions: ProcessAction[];
 }
 
-export type ProcessAction = SkipPage | SplitPage | CropPage | WriteOutput;
+export type ProcessAction =
+  | SkipPage
+  | SplitPage
+  | CropPage
+  | TrimPage
+  | WriteOutput;
 
 type Action<T extends string, Data extends {} = {}> = {
   action: T;
   /** List of input pages (as input.pageNumber) to skip this action */
   skip?: number[];
-  /** Lits of the only pages (as input.pageNumber) to process with this action */
+  /** List of the only pages (as input.pageNumber) to process with this action */
   only?: number[];
 } & Data;
 
@@ -51,6 +56,21 @@ export type CropPage = Action<
       top: number;
       width: number;
       height: number;
+    };
+  }
+>;
+
+/**
+ * Trim the image from the borders the specified quantity
+ */
+export type TrimPage = Action<
+  'TRIM',
+  {
+    trim: {
+      left?: number;
+      right?: number;
+      top?: number;
+      bottom?: number;
     };
   }
 >;

@@ -4,7 +4,7 @@ Small utility based on node.js to process comics (images).
 
 ## Usage
 
-This package is a simple cli and not UI-friendly... it's supposed to be run from code.
+This package is a simple cli and not UI-friendly... it's supposed to be run from code (UIs are welcome)
 
 Just install the development dependencies via
 
