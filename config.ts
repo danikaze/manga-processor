@@ -1,6 +1,7 @@
 import { Config } from '@src/config';
 
 const config: Config = {
+  extensions: ['.jpg', '.jpeg', '.png'],
   inputFolder: 'PATH/TO/INPUT/IMAGES',
   outputFolder: 'PATH/TO/OUTPUT/FOLDER',
   log: 'manga-processor-config.json',
