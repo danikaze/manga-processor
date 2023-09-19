@@ -5,6 +5,8 @@ export { InputImageData };
 export interface Config {
   /** Where read images from */
   inputFolder: string;
+  /** Extensions of the files to process (including the dot) */
+  extensions: string[];
   /** Base folder for output images */
   outputFolder: string;
   /** If defined, output will be written in this file, relative to outputFolder */

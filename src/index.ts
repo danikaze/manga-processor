@@ -1,5 +1,5 @@
 import sharp from 'sharp';
-import { join } from 'path';
+import { extname, join } from 'path';
 import { writeFileSync } from 'fs';
 import { name, version } from '../package.json';
 
@@ -16,9 +16,8 @@ async function run() {
   const startTime = Date.now();
   const { actions } = config;
 
-  createOutputFolder(config.outputFolder);
-
   const inputImages = getInputImages(config.inputFolder);
+  createOutputFolder(config.outputFolder);
 
   if (config.log) {
     const logPath = join(config.outputFolder, config.log);
@@ -27,6 +26,11 @@ async function run() {
   }
 
   for (const image of inputImages) {
+    if (!config.extensions.includes(extname(image.filename))) {
+      console.log(` - Skipping ${image.filename} by extension`);
+      continue;
+    }
+
     console.log(` - Processing ${image.filename}`);
     let buffers = [await sharp(image.filepath).toBuffer()];
 
