@@ -2,13 +2,29 @@ import { JpegOptions, PngOptions } from 'sharp';
 import { InputImageData } from './utils/get-input-images';
 export { InputImageData };
 
-export interface Config {
+export type Config = SingleFolderConfig | MultipleFolderConfig;
+
+export interface SingleFolderConfig extends BaseConfig {
   /** Where read images from */
   inputFolder: string;
-  /** Extensions of the files to process (including the dot) */
-  extensions: string[];
   /** Base folder for output images */
   outputFolder: string;
+}
+
+export interface MultipleFolderConfig extends BaseConfig {
+  /** When provided, it will be used as "prefix" of inputFolder and outputFolder */
+  basePath?: string;
+  /** Where read images from */
+  inputFolder: string[];
+  /** Base folder for output images */
+  outputFolder: string[];
+  /** If `true`, folders will be processed in parallel */
+  parallel?: boolean;
+}
+
+interface BaseConfig {
+  /** Extensions of the files to process (including the dot) */
+  extensions: string[];
   /** If defined, output will be written in this file, relative to outputFolder */
   log?: string;
   /** List of ProcessActions for EACH image (`skip` or `only` can be used) */

@@ -1,6 +1,7 @@
 import sharp from 'sharp';
 import { join } from 'path';
 import { InputImageData, WriteOutput } from './config';
+import { getDefaultOutputFilename } from './utils/get-default-output-path';
 
 export async function outputBuffers(
   buffers: Buffer[],
@@ -16,8 +17,8 @@ export async function outputBuffers(
 
       const getOutputFilename =
         config.outputFilename ||
-        defaultOutputFilename.bind(
-          undefined,
+        getDefaultOutputFilename(
+          outputFolder,
           config.format === 'png' ? '.png' : '.jpg'
         );
       const outputFilename = getOutputFilename(bufferIndex, input);
@@ -31,17 +32,6 @@ export async function outputBuffers(
 
   return (await Promise.all(outputWritePromises)).length;
 }
-
-const defaultOutputFilename = (() => {
-  let outputPage = 1;
-  let unknownImages = 0;
-  return (ext: string, bufferIndex: number, input: InputImageData) => {
-    if (input.pageNumber === undefined) {
-      return `unknown-${(unknownImages++).toString().padStart(3, '0')}${ext}`;
-    }
-    return `${(outputPage++).toString().padStart(3, '0')}${ext}`;
-  };
-})();
 
 function skipBuffer(
   { skipOut, onlyOut }: WriteOutput,
