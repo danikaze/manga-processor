@@ -1,12 +1,14 @@
 import { Config } from '@src/config';
 
 const config: Config = {
+  parallel: true,
   extensions: ['.jpg', '.jpeg', '.png'],
-  inputFolder: 'PATH/TO/INPUT/IMAGES',
-  outputFolder: 'PATH/TO/OUTPUT/FOLDER',
+  basePath: 'PATH/TO/INPUT/PARENT/FOLDER',
+  inputFolder: ['IMAGES_FOLDER_1', 'IMAGES_FOLDER_2', 'IMAGES_FOLDER_3'],
+  outputFolder: ['OUTPUT_FOLDER_1', 'OUTPUT_FOLDER_2', 'OUTPUT_FOLDER_3'],
   log: 'manga-processor-config.json',
   actions: [
-    // remove extra borders of every page
+    // 1st page is just the cover centered, crop it
     {
       action: 'CROP',
       region: {
@@ -15,24 +17,23 @@ const config: Config = {
         width: 3048,
         height: 2160,
       },
-    },
-    // 1st page is just the cover centered, crop it
-    {
-      action: 'CROP',
       only: [1],
-      region: {
-        left: 762,
-        top: 0,
-        width: 1525,
-        height: 2160,
+    },
+    // remove extra borders of every page
+    {
+      action: 'TRIM',
+      trim: {
+        left: 201,
+        right: 201,
       },
+      skip: [1],
     },
     // split pages but skip panoramic ones
-    { action: 'SPLIT', skip: [1, 13, 17, 22, 23, 34, 43, 56, 79, 101] },
+    { action: 'SPLIT', skip: [1, 4, 8] },
     // write outputs but skip the filler page
     {
       action: 'WRITE',
-      skipOut: [{ pageNumber: 2, bufferIndex: 0 }],
+      // skipOut: [{ pageNumber: 2, bufferIndex: 0 }],
     },
   ],
 };

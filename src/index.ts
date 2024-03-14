@@ -10,12 +10,54 @@ import { outputBuffers } from './output-buffers';
 import { splitPage } from './processors/split-page';
 import { cropPage } from './processors/crop-page';
 import { trimPage } from './processors/trim-page';
+import { Config, SingleFolderConfig } from './config';
 
 async function run() {
   console.log(`Running ${name} v${version}...`);
+
+  if (isSingleFolderConfig(config)) {
+    await processFolder(config);
+    return;
+  }
+
+  if (config.inputFolder.length !== config.outputFolder.length) {
+    throw new Error(
+      `When providing multiple folders, input and output lengths must match`
+    );
+  }
+
+  const { basePath, inputFolder, outputFolder, parallel, ...baseConfig } =
+    config;
+
+  const startTime = Date.now();
+  const promises: Promise<void>[] = [];
+  for (let i = 0; i < inputFolder.length; i++) {
+    const folderConfig: SingleFolderConfig = {
+      ...baseConfig,
+      inputFolder: basePath ? join(basePath, inputFolder[i]) : inputFolder[i],
+      outputFolder: basePath
+        ? join(basePath, outputFolder[i])
+        : outputFolder[i],
+    };
+    const promise = processFolder(folderConfig);
+    if (parallel) {
+      promises.push(promise);
+    } else {
+      await promise;
+    }
+  }
+  if (parallel) {
+    await Promise.allSettled(promises);
+  }
+  const ellapsedTime = ((Date.now() - startTime) / 1000).toFixed(2);
+  console.log(
+    `Finished processing ${inputFolder.length} folders in ${ellapsedTime} s.`
+  );
+}
+
+async function processFolder(config: SingleFolderConfig): Promise<void> {
   const startTime = Date.now();
   const { actions } = config;
-
   const inputImages = getInputImages(config.inputFolder);
   createOutputFolder(config.outputFolder);
 
@@ -72,6 +114,10 @@ async function run() {
   console.log(
     `Finished processing ${inputImages.length} images in ${ellapsedTime} s.`
   );
+}
+
+function isSingleFolderConfig(config: Config): config is SingleFolderConfig {
+  return !Array.isArray(config.inputFolder);
 }
 
 run();
