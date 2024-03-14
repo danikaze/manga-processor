@@ -14,32 +14,34 @@ export async function outputBuffers(
         return;
       }
 
-      const getOutputFilename = config.outputFilename || defaultOutputFilename;
+      const getOutputFilename =
+        config.outputFilename ||
+        defaultOutputFilename.bind(
+          undefined,
+          config.format === 'png' ? '.png' : '.jpg'
+        );
       const outputFilename = getOutputFilename(bufferIndex, input);
       if (!outputFilename) return;
 
       const outputPath = join(outputFolder, outputFilename);
       console.log(`  - writing ${outputFilename}`);
-      return sharp(buffer)
-        .jpeg({ quality: 100, ...config.outputOptions })
-        .toFile(outputPath);
+      return getFormatBuffer(buffer, config).toFile(outputPath);
     })
     .filter(Boolean);
 
   return (await Promise.all(outputWritePromises)).length;
 }
 
-const defaultOutputFilename: Exclude<WriteOutput['outputFilename'], undefined> =
-  (() => {
-    let outputPage = 1;
-    let unknownImages = 0;
-    return (bufferIndex, input) => {
-      if (input.pageNumber === undefined) {
-        return `unknown-${(unknownImages++).toString().padStart(3, '0')}.jpg`;
-      }
-      return `${(outputPage++).toString().padStart(3, '0')}.jpg`;
-    };
-  })();
+const defaultOutputFilename = (() => {
+  let outputPage = 1;
+  let unknownImages = 0;
+  return (ext: string, bufferIndex: number, input: InputImageData) => {
+    if (input.pageNumber === undefined) {
+      return `unknown-${(unknownImages++).toString().padStart(3, '0')}${ext}`;
+    }
+    return `${(outputPage++).toString().padStart(3, '0')}${ext}`;
+  };
+})();
 
 function skipBuffer(
   { skipOut, onlyOut }: WriteOutput,
@@ -64,4 +66,18 @@ function matchOutputDef(
         item.pageNumber === inputPageNumber && item.bufferIndex === bufferIndex
     ) !== undefined
   );
+}
+
+function getFormatBuffer(buffer: Buffer, config: WriteOutput): sharp.Sharp {
+  if (config.format === 'png') {
+    return sharp(buffer).png({
+      compressionLevel: 9,
+      quality: 100,
+      palette: true,
+      force: true,
+      ...config.outputOptions,
+    });
+  }
+
+  return sharp(buffer).jpeg({ quality: 100, ...config.outputOptions });
 }

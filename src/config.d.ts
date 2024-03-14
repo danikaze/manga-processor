@@ -1,4 +1,4 @@
-import { JpegOptions } from 'sharp';
+import { JpegOptions, PngOptions } from 'sharp';
 import { InputImageData } from './utils/get-input-images';
 export { InputImageData };
 
@@ -82,23 +82,38 @@ export type TrimPage = Action<
  */
 export type WriteOutput = Action<
   'WRITE',
-  {
-    skipOut?: { pageNumber: number; bufferIndex: number }[];
-    onlyOut?: { pageNumber: number; bufferIndex: number }[];
-    /**
-     * Output options to use when writting the buffer to disk
-     * Defaults to quality 100
-     */
-    outputOptions?: JpegOptions;
-    /**
-     * Filename to use for the written file.
-     * Defaults to `###.jpg` (and `unknown-###.jpg` for inputs without `pageNumber`)
-     *
-     * It will not output anything if the returned value is `undefined`
-     */
-    outputFilename?: (
-      bufferIndex: number,
-      input: InputImageData
-    ) => string | undefined;
-  }
+  WriteOutputJpgOptions | WriteOutputPngOptions
 >;
+
+interface WriteOutputBaseOptions {
+  skipOut?: { pageNumber: number; bufferIndex: number }[];
+  onlyOut?: { pageNumber: number; bufferIndex: number }[];
+  /**
+   * Filename to use for the written file.
+   * Defaults to `###.jpg` (and `unknown-###.jpg` for inputs without `pageNumber`)
+   *
+   * It will not output anything if the returned value is `undefined`
+   */
+  outputFilename?: (
+    bufferIndex: number,
+    input: InputImageData
+  ) => string | undefined;
+}
+
+interface WriteOutputJpgOptions extends WriteOutputBaseOptions {
+  format?: 'jpg' | 'jpeg';
+  /**
+   * Output options to use when writting the buffer to disk
+   * Defaults to quality 100
+   */
+  outputOptions?: JpegOptions;
+}
+
+interface WriteOutputPngOptions extends WriteOutputBaseOptions {
+  format: 'png';
+  /**
+   * Output options to use when writting the buffer to disk
+   * Defaults to quality 100
+   */
+  outputOptions?: PngOptions;
+}
